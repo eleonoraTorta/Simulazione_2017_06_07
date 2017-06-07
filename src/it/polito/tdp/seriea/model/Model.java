@@ -84,7 +84,6 @@ public class Model {
 					t.addPunteggio(1);
 				}	
 			}
-			
 		}
 		List<Team> classifiche = new ArrayList<Team>(grafo.vertexSet());
 		Collections.sort(classifiche);

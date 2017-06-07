@@ -50,7 +50,6 @@ public class SerieAController {
     	for( Team t : classifica){
     		txtResult.appendText(t.getTeam() + " " + t.getPunteggio() + "\n");
     	}
-
     }
 
     @FXML

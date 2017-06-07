@@ -121,7 +121,6 @@ public class SerieADAO {
 						"WHERE season = ?" ;
 			
 			List<Team> result = new ArrayList<>() ;
-			
 			Connection conn = DBConnect.getConnection() ;
 			
 			try {

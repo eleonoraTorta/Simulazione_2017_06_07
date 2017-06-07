@@ -65,7 +65,6 @@ public class Team implements Comparable <Team>{
 		return true;
 	}
 
-
 	@Override
 	public int compareTo(Team altra) {
 		return -( this.punteggio - altra.punteggio);
@@ -79,7 +78,4 @@ public class Team implements Comparable <Team>{
 		punteggio = punteggio + punti;
 	}
 	
-	
-	
-
 }

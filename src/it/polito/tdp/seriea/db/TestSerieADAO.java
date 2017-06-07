@@ -26,7 +26,6 @@ public class TestSerieADAO {
 
 		System.out.println(dao.getTeamPerStagione(2003));
 
-
 	}
 
 }
