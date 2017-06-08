@@ -11,18 +11,16 @@ public class TestSerieADAO {
 
 	public static void main(String[] args) {
 		SerieADAO dao = new SerieADAO() ;
-		
-		List<Season> seasons = dao.listSeasons() ;
+	
 		Map <Integer, Season> stagioni = new TreeMap <Integer, Season>();
-		for( Season s : seasons){
-			stagioni.put(s.getSeason(), s);   
-		}
+		List<Season> seasons = dao.listSeasons(stagioni) ;
 		System.out.println(seasons);
 		
-		List<Team> teams = dao.listTeams() ;
+		Map <String, Team> squadre = new TreeMap <String, Team>();
+		List<Team> teams = dao.listTeams(squadre) ;
 		System.out.println(teams);
 		
-		System.out.println(dao.getMatches(2003, stagioni, teams));
+		System.out.println(dao.getMatches( stagioni.get(2003),squadre));
 
 		System.out.println(dao.getTeamPerStagione(2003));
 

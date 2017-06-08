@@ -16,7 +16,7 @@ import it.polito.tdp.seriea.model.Team;
 
 public class SerieADAO {
 	
-	public List<Season> listSeasons() {
+	public List<Season> listSeasons(Map <Integer, Season> stagioni) {
 		String sql = "SELECT season, description FROM seasons" ;
 		
 		List<Season> result = new ArrayList<>() ;
@@ -29,7 +29,9 @@ public class SerieADAO {
 			ResultSet res = st.executeQuery() ;
 			
 			while(res.next()) {
-				result.add( new Season(res.getInt("season"), res.getString("description"))) ;
+				Season stagione = new Season(res.getInt("season"), res.getString("description")) ;
+				result.add(stagione) ;
+				stagioni.put(stagione.getSeason(), stagione);
 			}
 			
 			conn.close();
@@ -41,7 +43,7 @@ public class SerieADAO {
 		}
 	}
 	
-	public List<Team> listTeams() {
+	public List<Team> listTeams(Map <String, Team> teams) {
 		String sql = "SELECT team FROM teams" ;
 		
 		List<Team> result = new ArrayList<>() ;
@@ -54,7 +56,9 @@ public class SerieADAO {
 			ResultSet res = st.executeQuery() ;
 			
 			while(res.next()) {
-				result.add( new Team(res.getString("team"))) ;
+				Team team = new Team(res.getString("team")) ;
+				result.add( team) ;
+				teams.put(team.getTeam(), team);
 			}
 			
 			conn.close();
@@ -66,7 +70,7 @@ public class SerieADAO {
 		}
 	}
 		
-		public List<Match> getMatches(int idStagione, Map<Integer, Season> stagioni, List<Team> squadre) {
+		public List<Match> getMatches(Season stagione,  Map <String,Team> squadre) {
 			String sql = "SELECT * "+
 						"FROM matches " +
 						"WHERE season = ?" ;
@@ -77,25 +81,16 @@ public class SerieADAO {
 			
 			try {
 				PreparedStatement st = conn.prepareStatement(sql) ;
-				st.setInt(1, idStagione);
+				st.setInt(1, stagione.getSeason());
 				
 				ResultSet res = st.executeQuery() ;
-				Team home = null;
-				Team away = null;
 				
 				while(res.next()) {
 					
 					int id = res.getInt("match_id");
-					Season stagione = stagioni.get(res.getInt("Season"));
 					LocalDate data = res.getDate("Date").toLocalDate();
-					for( Team t : squadre){
-						if( t.getTeam().equals(res.getString("HomeTeam"))){
-							home = t;
-						}
-						if( t.getTeam().equals(res.getString("AwayTeam"))){
-							away = t;
-						}
-					}
+					Team home = squadre.get(res.getString("HomeTeam"));
+					Team away = squadre.get(res.getString("AwayTeam"));
 					int goalH = res.getInt("FTHG");
 					int goalA = res.getInt("FTAG");
 					String ris = res.getString("FTR");
