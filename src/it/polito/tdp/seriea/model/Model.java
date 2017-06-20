@@ -2,6 +2,7 @@ package it.polito.tdp.seriea.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.jgrapht.Graphs;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.DirectedWeightedMultigraph;
+import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import it.polito.tdp.seriea.db.SerieADAO;
 
@@ -24,7 +27,7 @@ public class Model {
 	private Map <Integer, Season> mappaStagioni ;
 	private Map <String, Team> mappaTeams ;
 	private List <Match> matches;
-	private DirectedWeightedMultigraph <Team, DefaultWeightedEdge> grafo ;
+	private SimpleDirectedWeightedGraph <Team, DefaultWeightedEdge> grafo ;
 	private Set<DefaultWeightedEdge> usedEdges ;
 
 	
@@ -54,13 +57,17 @@ public class Model {
 	public void creaGrafo(Season stagione) {
 		
 		// Inizializzo il grafo
-		this.grafo = new DirectedWeightedMultigraph<Team, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+		this.grafo = new SimpleDirectedWeightedGraph<Team, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 		
 		// Ottengo i matches di questa stagione dal database
 		matches = dao.getMatches(stagione, mappaTeams);
 		
 		// Carico i vertici
-		Graphs.addAllVertices(grafo, dao.getTeamPerStagione(stagione.getSeason())) ;
+		Graphs.addAllVertices(grafo, dao.getTeamPerStagione(stagione.getSeason(), mappaTeams)) ;
+		// alternativamente posso iterare sui match, il meodo addVertex assicura di non aggiungere duplicati al grafo (non sono necessari controlli)
+		// for (Match m : matches) {
+		// 	 graph.addVertex(m.getHomeTeam());
+		// 	 graph.addVertex(m.getAwayTeam());
 		
 		// Aggiungo gli archi
 		for( Match m : matches){
@@ -80,8 +87,14 @@ public class Model {
 	}
 
 
+	// METODO 1 : itero sui vertici
 	public List<Team> getClassifica(Season stagione) {
 		this.creaGrafo(stagione);
+		
+		// azzero i punteggi
+		for (Team t : grafo.vertexSet()){
+				t.azzeraPunti();
+		}
 		
 		for(Team t : grafo.vertexSet()){
 			
@@ -121,15 +134,56 @@ public class Model {
 		}
 		List<Team> classifiche = new ArrayList<Team>(grafo.vertexSet());
 		Collections.sort(classifiche);
+		// alternativamente, anziche implementare con comparable un metodo  -(this - altro)
+		// posso usare reverseOrder() che inverte l'ordinamente naturale
+		// Collections.sort(classifiche, Comparator.reverseOrder());
+		
 		return classifiche;	
 
+	}
+	
+	// METODO 2 : itero sugli archi
+	public List<Team> getClassifica2() {
+		// azzero i punteggi
+		for (Team t : grafo.vertexSet())
+			t.azzeraPunti();
+
+		// considero ogni partita
+		for (DefaultWeightedEdge e : grafo.edgeSet()) {
+			Team home = grafo.getEdgeSource(e);
+			Team away = grafo.getEdgeTarget(e);
+			switch ((int) grafo.getEdgeWeight(e)) {
+			case +1:
+//				home.setPunti(home.getPunteggio() + 3);
+				break;
+			case -1:
+//				away.setPunti(away.getPunteggio() + 3);
+				break;
+			case 0:
+//				home.setPunti(home.getPunteggio() + 1);
+//				away.setPunti(away.getPunteggio() + 1);
+				break;
+			}
+		}
+
+		List<Team> classifica = new ArrayList<Team>(grafo.vertexSet());
+		Collections.sort(classifica, new Comparator<Team>() {
+
+			@Override
+			public int compare(Team o1, Team o2) {
+				return -(o1.getPunteggio() - o2.getPunteggio());
+			}
+		});
+
+		return classifica;
 	}
 
 	public List <Team> getSequenza(Season stagione){
 		
 		List <Team> parziale = new ArrayList <Team>();
 		List <Team> best = new ArrayList <Team>();
-		this.usedEdges = new HashSet<>() ;;
+		this.usedEdges = new HashSet<>() ;
+		
 		
 		/***ATTENZIONE***/
 		/**
@@ -156,6 +210,8 @@ public class Model {
 		if(parziale.size() > best.size()){
 			best.clear();
 			best.addAll(parziale);	
+			// oppure this.best = new ArrayList<>(parziale)
+			// ma NON this.best = parziale
 		}
 		
 		for(DefaultWeightedEdge arco : grafo.outgoingEdgesOf(iniziale)){

@@ -77,5 +77,9 @@ public class Team implements Comparable <Team>{
 	public void addPunteggio(int punti) {
 		punteggio = punteggio + punti;
 	}
+
+	public void azzeraPunti() {
+		this.punteggio = 0;	
+	}
 	
 }

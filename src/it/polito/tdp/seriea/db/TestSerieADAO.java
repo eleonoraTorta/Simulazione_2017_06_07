@@ -22,7 +22,7 @@ public class TestSerieADAO {
 		
 		System.out.println(dao.getMatches( stagioni.get(2003),squadre));
 
-		System.out.println(dao.getTeamPerStagione(2003));
+		System.out.println(dao.getTeamPerStagione(2003, squadre));
 
 	}
 

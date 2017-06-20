@@ -110,7 +110,7 @@ public class SerieADAO {
 			}
 		}
 		
-		public List<Team> getTeamPerStagione(int idStagione) {
+		public List<Team> getTeamPerStagione(int idStagione, Map <String , Team> teams) {
 			String sql = "SELECT DISTINCT HomeTeam " +
 						"FROM matches " +
 						"WHERE season = ?" ;
@@ -124,7 +124,8 @@ public class SerieADAO {
 				ResultSet res = st.executeQuery() ;
 				
 				while(res.next()) {
-					result.add( new Team(res.getString("HomeTeam"))) ;
+					Team t = teams.get(res.getString("HomeTeam"));
+					result.add(t) ;
 				}
 				
 				conn.close();
